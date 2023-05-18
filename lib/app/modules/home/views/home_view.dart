@@ -79,16 +79,32 @@ class HomeView extends GetView<HomeController> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  buildWalletAction(
-                    context: context,
-                    title: "Withdraw",
-                    iconData: Icons.mobile_friendly_rounded,
+                  GestureDetector(
+                    onTap: () {
+                      _buildWalletBottomSheetAction(
+                        context: context,
+                        walletActionType: WalletActionType.withdraw,
+                      );
+                    },
+                    child: buildWalletAction(
+                      context: context,
+                      title: "Withdraw",
+                      iconData: Icons.mobile_friendly_rounded,
+                    ),
                   ),
                   const SizedBox(width: 20),
-                  buildWalletAction(
-                    context: context,
-                    title: "Deposit",
-                    iconData: Icons.add_outlined,
+                  GestureDetector(
+                    onTap: () {
+                      _buildWalletBottomSheetAction(
+                        context: context,
+                        walletActionType: WalletActionType.deposit,
+                      );
+                    },
+                    child: buildWalletAction(
+                      context: context,
+                      title: "Deposit",
+                      iconData: Icons.add_outlined,
+                    ),
                   ),
                 ],
               ),
@@ -100,7 +116,7 @@ class HomeView extends GetView<HomeController> {
             DefaultTabController(
               length: 4,
               child: SizedBox(
-                height: Get.height * 0.435,
+                height: Get.height * 0.5,
                 child: Column(
                   children: [
                     const TabBar(
@@ -143,6 +159,158 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Future<dynamic> _buildWalletBottomSheetAction({
+    required BuildContext context,
+    required WalletActionType walletActionType,
+  }) {
+    return showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+      ),
+      builder: (BuildContext context) {
+        return Form(
+          key: controller.formKey,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 10,
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        walletActionType.name.capitalizeFirst!,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineLarge!
+                            .copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontSize: 24,
+                            ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          controller.amountTextEditingController.text = "";
+                          controller.selectedAmount.value = 0.0;
+                          Get.back();
+                        },
+                        icon: Icon(
+                          Icons.close,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          size: 34,
+                        ),
+                      )
+                    ],
+                  ),
+                  Divider(
+                    color: Theme.of(context).colorScheme.outline,
+                    height: 0.3,
+                    thickness: 0.5,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextFormField(
+                    controller: controller.amountTextEditingController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      hintText:
+                          "Enter amount you want to ${walletActionType.name}",
+                      label: const Text("Amount"),
+                    ),
+                    validator: controller.validateAmount,
+                    onChanged: controller.updateSelectedAmount,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      buildEasyMoneySelector(context: context, amount: 5000),
+                      buildEasyMoneySelector(context: context, amount: 10000),
+                      buildEasyMoneySelector(context: context, amount: 15000),
+                      buildEasyMoneySelector(context: context, amount: 20000),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  GestureDetector(
+                    onTap: controller.submitWalletForm,
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        "Withdraw",
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.surface),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Obx buildEasyMoneySelector(
+      {required BuildContext context, required double amount}) {
+    return Obx(
+      () => GestureDetector(
+        onTap: () {
+          controller.amountTextEditingController.text = amount.toString();
+          controller.selectedAmount.value = amount;
+        },
+        child: Container(
+          height: 60,
+          width: 60,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: amount == controller.selectedAmount.value
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurface,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            "$amount",
+            style: TextStyle(
+                color: amount == controller.selectedAmount.value
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurface),
+          ),
         ),
       ),
     );
