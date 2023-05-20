@@ -116,7 +116,7 @@ class HomeView extends GetView<HomeController> {
             DefaultTabController(
               length: 4,
               child: SizedBox(
-                height: Get.height * 0.5,
+                height: Get.height * 0.46,
                 child: Column(
                   children: [
                     const TabBar(
